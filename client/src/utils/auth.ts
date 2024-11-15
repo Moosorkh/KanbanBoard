@@ -10,18 +10,25 @@ class AuthService {
   loggedIn() {
     // TODO: return a value that indicates if the user is logged in
     const token = this.getToken();
-    return token && !this.isTokenExpired(token);
+    return token && !this.isTokenExpired(token) ? true : false;
   }
   
   isTokenExpired(token: string): boolean {
     // TODO: implement token expiration check
-    const decoded = jwtDecode<JwtPayload>(token);
-    return decoded.exp ? decoded.exp * 1000 < Date.now() : false;
+    try {
+      const decoded = jwtDecode<JwtPayload>(token);
+      if (decoded.exp) {
+        return decoded.exp * 1000 < Date.now();
+      }
+      return false;
+    } catch {
+      return false;
+    }
   }
 
-  getToken(): string {
+  getToken(): string | null {
     // TODO: return the token
-    return localStorage.getItem('token') || '';
+    return localStorage.getItem('token');
   }
 
   login(idToken: string) {
