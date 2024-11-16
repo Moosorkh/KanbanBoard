@@ -6,7 +6,7 @@ import { TicketFactory } from './ticket.js';
 dotenv.config();
 
 // Get the database URL from environment variables
-const databaseUrl = process.env.DATABASE_URL || process.env.INTERNAL_DATABASE_URL;
+const databaseUrl = process.env.DATABASE_URL;
 
 // Create Sequelize instance using the URL
 const sequelize = new Sequelize(databaseUrl!, {
