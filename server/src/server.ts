@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
 import express from "express";
 import routes from "./routes/index.js";
-import { sequelize } from "./models/index.js";
-import seedUsers from "./seeds/user-seeds.js";
+//import { sequelize } from "./models/index.js";
+//import seedUsers from "./seeds/user-seeds.js";
 
 dotenv.config();
 
@@ -24,11 +24,11 @@ const startServer = async () => {
   try {
     // Force sync and seed
     console.log("Starting database sync with force...");
-    await sequelize.sync({ force: true });
+    //await sequelize.sync({ force: true });
     console.log("Database synced, starting seeding...");
 
     // Run seeders
-    await seedUsers(); // Seed users only
+   // await seedUsers(); // Seed users only
     console.log("Seeding completed");
 
     // Start server
