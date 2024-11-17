@@ -46,6 +46,11 @@ export function UserFactory(sequelize: Sequelize): typeof User {
       sequelize,
       hooks: {
         beforeCreate: async (user: User) => {
+          // await user.setPassword(user.password);
+          if(user.password) {
+            throw new Error("Password is required for user creation");
+          }
+          console.log("User created:", user.username);
           await user.setPassword(user.password);
         },
         beforeUpdate: async (user: User) => {
