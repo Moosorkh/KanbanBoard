@@ -56,17 +56,14 @@ export function UserFactory(sequelize: Sequelize): typeof User {
       hooks: {
         beforeCreate: async (user: User) => {
           console.log("Before Create Hook - User:", user);
-          if (!user.password) {
+
+          // Use dataValues to fetch password for bulkCreate compatibility
+          if (!user.dataValues.password || user.dataValues.password === "") {
             throw new Error("Password is required for user creation");
           }
-          await user.setPassword(user.password);
-          console.log("Password hashed for user:", user.username);
-        },
-        beforeUpdate: async (user: User) => {
-          if (!user.password) {
-            throw new Error("Password is required for user update");
-          }
-          await user.setPassword(user.password);
+
+          user.password = await bcrypt.hash(user.dataValues.password, 10);
+          console.log(`Password hashed for user: ${user.dataValues.username}`);
         },
       },
       // hooks: {
