@@ -1,44 +1,39 @@
-const forceDatabaseRefresh = false;
-
-import dotenv from 'dotenv';
-import express from 'express';
-import routes from './routes/index.js';
-import { sequelize } from './models/index.js';
-import seedAll from './seeds/index.js';
+import dotenv from "dotenv";
+import express from "express";
+import routes from "./routes/index.js";
+import { sequelize } from "./models/index.js";
+import seedAll from "./seeds/index.js";
 
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 3001;
 
-const PORT = process.env.PORT || 3001; // Convert to number, default to 3001
-
-// Serves static files in the entire client's dist folder
-app.use(express.static('../client/dist'));
+app.use(express.static("../client/dist"));
 app.use(express.json());
 app.use(routes);
 
-
 const startServer = async () => {
   try {
-    // Sync database and conditionally seed
-    await sequelize.sync({ force: forceDatabaseRefresh });
-    console.log("Database synced.");
+    // Force sync and seed
+    console.log("Starting database sync with force...");
+    await sequelize.sync({ force: true });
+    console.log("Database synced, starting seeding...");
 
-    if (forceDatabaseRefresh) {
-      console.log("Seeding database...");
-      await seedAll();
-      console.log("Database seeded successfully.");
-    }
+    await seedAll();
+    console.log("Seeding completed");
 
     app.listen(PORT, () => {
       console.log(`Server is listening on port ${PORT}`);
     });
   } catch (error) {
-    console.error("Error starting server:", error);
+    console.error("Startup error:", error);
   }
 };
 
 startServer();
+
+export default app;
 
 // await seedAll();
 
