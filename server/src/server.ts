@@ -1,47 +1,41 @@
 import dotenv from "dotenv";
 import express from "express";
 import routes from "./routes/index.js";
-//import { sequelize } from "./models/index.js";
-//import seedUsers from "./seeds/user-seeds.js";
+import { sequelize } from "./models/index.js";
+// import seedAll from "./seeds/index.js";
 
 dotenv.config();
 
 const app = express();
-// Use Render's PORT environment variable or fallback to 3000
 const PORT = parseInt(process.env.PORT as string, 10) || 3000;
 
-// Middleware
 app.use(express.json());
 app.use(express.static("../client/dist"));
 app.use(routes);
 
-// Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "healthy" });
 });
 
 const startServer = async () => {
   try {
-    // Force sync and seed
-    console.log("Starting database sync with force...");
-    //await sequelize.sync({ force: true });
-    console.log("Database synced, starting seeding...");
+    console.log("Starting database sync...");
+    await sequelize.sync(); // No { force: true } for production
 
-    // Run seeders
-   // await seedUsers(); // Seed users only
-    console.log("Seeding completed");
+    // Uncomment this only if the database isn't seeded
+    // console.log("Seeding database...");
+    // await seedAll();
+    // console.log("Seeding completed.");
 
-    // Start server
-    const server = app.listen(PORT, "0.0.0.0", () => {
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server is running at http://0.0.0.0:${PORT}`);
     });
-
-    // Handle server errors
-    server.on("error", (error) => {
-      console.error("Server error:", error);
-    });
   } catch (error) {
-    console.error("Startup error:", error);
+    if (error instanceof Error) {
+      console.error("Startup error:", error.message, error.stack);
+    } else {
+      console.error("Startup error:", error);
+    }
   }
 };
 
