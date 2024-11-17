@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import routes from './routes/index.js';
 import { sequelize } from './models/index.js';
-import seedAll from './seeds/index.js';
+//import seedAll from './seeds/index.js';
 
 dotenv.config();
 
@@ -17,7 +17,7 @@ app.use(express.static('../client/dist'));
 
 app.use(express.json());
 app.use(routes);
-await seedAll();
+//await seedAll();
 
 sequelize.sync({force: forceDatabaseRefresh}).then(() => {
   app.listen(PORT, () => {
