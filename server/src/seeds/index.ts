@@ -27,34 +27,42 @@ import { seedTickets } from "./ticket-seeds.js";
 import { sequelize } from "../models/index.js";
 
 const seedAll = async (): Promise<void> => {
+  console.log("Starting database seeding process...");
+
   try {
-    await sequelize.sync({ force: true });
-    console.log("\n----- DATABASE SYNCED -----\n");
-
-    // Check if users already exist
+    // Check existing data
     const userCount = await sequelize.models.User.count();
-    if (userCount === 0) {
-      await seedUsers();
-      console.log("\n----- USERS SEEDED -----\n");
-    } else {
-      console.log("\n----- USERS ALREADY EXIST -----\n");
-    }
-
-    // Check if tickets already exist
     const ticketCount = await sequelize.models.Ticket.count();
-    if (ticketCount === 0) {
-      await seedTickets();
-      console.log("\n----- TICKETS SEEDED -----\n");
+
+    console.log(
+      `Current database state - Users: ${userCount}, Tickets: ${ticketCount}`
+    );
+
+    if (userCount === 0) {
+      console.log("No users found, starting user seeding...");
+      await seedUsers();
+      const newUserCount = await sequelize.models.User.count();
+      console.log(`Users seeded successfully. New user count: ${newUserCount}`);
     } else {
-      console.log("\n----- TICKETS ALREADY EXIST -----\n");
+      console.log("Users already exist, skipping user seeding");
     }
 
-    // Don't exit the process anymore
-    return;
+    if (ticketCount === 0) {
+      console.log("No tickets found, starting ticket seeding...");
+      await seedTickets();
+      const newTicketCount = await sequelize.models.Ticket.count();
+      console.log(
+        `Tickets seeded successfully. New ticket count: ${newTicketCount}`
+      );
+    } else {
+      console.log("Tickets already exist, skipping ticket seeding");
+    }
+
+    console.log("Seeding process completed successfully");
   } catch (error) {
-    console.error("Error seeding database:", error);
-    // Don't throw the error, just log it
-    return;
+    console.error("Error during seeding process:", error);
+    // Log error but don't throw
+    console.log("Continuing deployment despite seeding error");
   }
 };
 
