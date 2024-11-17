@@ -17,6 +17,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     }
 
     console.log("User found");
+    console.log("Stored password in DB:", user.password);
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     console.log("Password valid:", isPasswordValid);
