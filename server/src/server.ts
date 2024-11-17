@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import routes from "./routes/index.js";
 import { sequelize } from "./models/index.js";
+import path from "path";
 // import seedAll from "./seeds/index.js";
 //import seedTickets from "./seeds/ticket-seeds.js";
 
@@ -13,6 +14,10 @@ const PORT = parseInt(process.env.PORT as string, 10) || 3000;
 app.use(express.json());
 app.use(express.static("../client/dist"));
 app.use(routes);
+
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "../client/dist/index.html"));
+});
 
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "healthy" });
