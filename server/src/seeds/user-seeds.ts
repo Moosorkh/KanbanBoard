@@ -9,14 +9,19 @@ import { User } from '../models/user.js';
 // };
 
 export const seedUsers = async () => {
+  const existingUsers = await User.findAll();
+  if (existingUsers.length > 0) {
+    console.log("Users already seeded. Skipping...");
+    return;
+  }
+
   const users = [
     { username: "JollyGuru", password: "password" },
     { username: "SunnyScribe", password: "password" },
     { username: "RadiantComet", password: "password" },
   ];
 
-  // Log users for debugging
   console.log("Seeding users:", users);
-
   await User.bulkCreate(users, { individualHooks: true });
+  console.log("Users seeded successfully.");
 };

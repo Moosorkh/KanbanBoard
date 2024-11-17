@@ -58,12 +58,12 @@ export function UserFactory(sequelize: Sequelize): typeof User {
           console.log("Before Create Hook - User:", user);
 
           // Use dataValues to fetch password for bulkCreate compatibility
-          if (!user.dataValues.password || user.dataValues.password === "") {
+          if (!user.password || user.password === "") {
             throw new Error("Password is required for user creation");
           }
-
+           console.log(`Hashing password for user: ${user.username}`);
           user.password = await bcrypt.hash(user.dataValues.password, 10);
-          console.log(`Password hashed for user: ${user.dataValues.username}`);
+          console.log(`Password hashed for user: ${user.username}`);
         },
       },
       // hooks: {
