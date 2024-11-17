@@ -25,11 +25,8 @@ export class User
   //   const saltRounds = 10;
   //   this.password = await bcrypt.hash(password, saltRounds);
   // }
-  public async setPassword(password: string) {
-    const saltRounds = 10;
-    console.log("Hashing password:", password);
-    this.password = await bcrypt.hash(password, saltRounds);
-    console.log("Hashed password:", this.password);
+  public async verifyPassword(password: string): Promise<boolean> {
+    return bcrypt.compare(password, this.password);
   }
 }
 
@@ -54,31 +51,29 @@ export function UserFactory(sequelize: Sequelize): typeof User {
       tableName: "users",
       sequelize,
       hooks: {
-        beforeCreate: async (user: User) => {
-          console.log("Before Create Hook - User:", user);
-
-          // Use dataValues to fetch password for bulkCreate compatibility
-          if (!user.password || user.password === "") {
-            throw new Error("Password is required for user creation");
+        beforeCreate: async (user: any) => {
+          if (!user.getDataValue("password")) {
+            throw new Error("Password is required");
           }
-           console.log(`Hashing password for user: ${user.username}`);
-          user.password = await bcrypt.hash(user.dataValues.password, 10);
-          console.log(`Password hashed for user: ${user.username}`);
+          const hashedPassword = await bcrypt.hash(
+            user.getDataValue("password"),
+            10
+          );
+          user.setDataValue("password", hashedPassword);
+        },
+        beforeBulkCreate: async (users: any[]) => {
+          for (const user of users) {
+            if (!user.getDataValue("password")) {
+              throw new Error("Password is required");
+            }
+            const hashedPassword = await bcrypt.hash(
+              user.getDataValue("password"),
+              10
+            );
+            user.setDataValue("password", hashedPassword);
+          }
         },
       },
-      // hooks: {
-      //   beforeCreate: async (user: User) => {
-      //     // await user.setPassword(user.password);
-      //     if(user.password) {
-      //       throw new Error("Password is required for user creation");
-      //     }
-      //     console.log("User created:", user.username);
-      //     await user.setPassword(user.password);
-      //   },
-      //   beforeUpdate: async (user: User) => {
-      //     await user.setPassword(user.password);
-      //   },
-      // }
     }
   );
 

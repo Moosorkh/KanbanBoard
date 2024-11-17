@@ -20,8 +20,14 @@ export const seedUsers = async () => {
     { username: "SunnyScribe", password: "password" },
     { username: "RadiantComet", password: "password" },
   ];
-
-  console.log("Seeding users:", users);
-  await User.bulkCreate(users, { individualHooks: true });
-  console.log("Users seeded successfully.");
+  try {
+    console.log("Creating users...");
+    await User.bulkCreate(users);
+    console.log("Users seeded successfully");
+  } catch (error) {
+    console.error("Error seeding users:", error);
+    throw error;
+  }
 };
+
+export default seedUsers;
