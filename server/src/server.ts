@@ -7,11 +7,18 @@ import seedAll from "./seeds/index.js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+// Use Render's PORT environment variable or fallback to 3000
+const PORT = parseInt(process.env.PORT as string, 10) || 3000;
 
-app.use(express.static("../client/dist"));
+// Middleware
 app.use(express.json());
+app.use(express.static("../client/dist"));
 app.use(routes);
+
+// Add a health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "healthy" });
+});
 
 const startServer = async () => {
   try {
@@ -23,8 +30,14 @@ const startServer = async () => {
     await seedAll();
     console.log("Seeding completed");
 
-    app.listen(PORT, () => {
-      console.log(`Server is listening on port ${PORT}`);
+    // Start the server and log the port explicitly
+    const server = app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server is running at http://0.0.0.0:${PORT}`);
+    });
+
+    // Handle server errors
+    server.on("error", (error) => {
+      console.error("Server error:", error);
     });
   } catch (error) {
     console.error("Startup error:", error);
