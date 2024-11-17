@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import routes from "./routes/index.js";
 import { sequelize } from "./models/index.js";
-//import seedAll from "./seeds/index.js";
+import seedUsers from "./seeds/user-seeds.js";
 
 dotenv.config();
 
@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(express.static("../client/dist"));
 app.use(routes);
 
-// Add a health check endpoint
+// Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "healthy" });
 });
@@ -27,10 +27,11 @@ const startServer = async () => {
     await sequelize.sync({ force: true });
     console.log("Database synced, starting seeding...");
 
-    //await seedAll();
+    // Run seeders
+    await seedUsers(); // Seed users only
     console.log("Seeding completed");
 
-    // Start the server and log the port explicitly
+    // Start server
     const server = app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server is running at http://0.0.0.0:${PORT}`);
     });
