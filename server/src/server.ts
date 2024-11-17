@@ -15,7 +15,11 @@ app.use(express.json());
 app.use(express.static("../client/dist"));
 app.use(routes);
 
-app.get("*", (req, res) => {
+// Fallback route to serve React app for any undefined routes
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api")) {
+    return next(); // Allow API routes to pass through
+  }
   res.sendFile(path.resolve(__dirname, "../client/dist/index.html"));
 });
 
