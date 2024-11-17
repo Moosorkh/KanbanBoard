@@ -3,7 +3,7 @@ import express from "express";
 import routes from "./routes/index.js";
 import { sequelize } from "./models/index.js";
 // import seedAll from "./seeds/index.js";
-import seedTickets from "./seeds/ticket-seeds.js";
+//import seedTickets from "./seeds/ticket-seeds.js";
 
 dotenv.config();
 
@@ -28,7 +28,7 @@ const startServer = async () => {
     // await seedAll();
     // console.log("Seeding completed.");
       console.log("Checking for tickets to seed...");
-      await seedTickets();
+     // await seedTickets();
 
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server is running at http://0.0.0.0:${PORT}`);
