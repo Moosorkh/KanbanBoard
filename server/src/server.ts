@@ -29,7 +29,7 @@
 import fs from "fs/promises";
 import path from "path";
 
-const STORAGE_DIR = process.env.STORAGE_PATH || "/opt/render/project/data";
+const STORAGE_DIR = process.env.STORAGE_PATH || "/var/data";
 const INIT_FLAG_FILE = path.join(STORAGE_DIR, ".initialized");
 
 const initializeDatabase = async () => {
