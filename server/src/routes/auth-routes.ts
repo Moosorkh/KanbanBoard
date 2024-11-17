@@ -27,7 +27,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
 
     console.log("JWT_SECRET_KEY exists:", !!process.env.JWT_SECRET_KEY);
     // let's add the expiration for 10 seconds
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET_KEY as string, { expiresIn: '10s' });
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET_KEY as string, { expiresIn: '1h' });
 
     console.log("Token generated:", !!token);
 
