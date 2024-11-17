@@ -8,18 +8,6 @@ dotenv.config();
 // Get the database URL from environment variables
 const databaseUrl = process.env.DATABASE_URL;
 
-// Create Sequelize instance using the URL
-// const sequelize = new Sequelize(databaseUrl!, {
-//   dialect: 'postgres',
-//   dialectOptions: {
-//     ssl: {
-//       require: true,
-//       rejectUnauthorized: false // Important for Render's SSL connection
-//     }
-//   },
-//   logging: false // Set to true for debugging
-// });
-
 const sequelize = process.env.DATABASE_URL
   ? new Sequelize(process.env.DATABASE_URL)
   : new Sequelize(
