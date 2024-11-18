@@ -2,26 +2,30 @@
 
 ## Description
 
-The **KanbanBoard** application is a web-based candidate search tool designed to help employers find potential hires by browsing through GitHub profiles. This application connects to the GitHub API, allowing users to review candidate profiles, save promising candidates, and revisit saved profiles later.
+The **KanbanBoard** application is a web-based task management tool that helps teams and individuals track tasks visually using a Kanban-style board. Users can create, edit, and manage tickets assigned to different statuses, making it easy to stay organized and productive.
 
 ### Motivation
 
-The goal of this project was to streamline the candidate search process, providing an easy-to-use tool for employers to quickly browse, evaluate, and save profiles of developers on GitHub. By utilizing GitHub as a data source, the application offers a real-time, accurate overview of candidates based on their public profile information.
+The goal of this project was to build a functional Kanban board using modern web development practices, focusing on implementing a full-stack application with a responsive and user-friendly interface. The project also provided an opportunity to learn and apply key skills in authentication, database management, and deployment.
 
 ### What Problem Does It Solve?
 
-CandidateSearch simplifies the hiring process for employers who want to hire developers by:
-- Displaying GitHub profile information in an organized and accessible manner.
-- Allowing users to save profiles of potential candidates for later review.
-- Ensuring saved profiles persist between sessions.
+KanbanBoard solves the problem of task management by:
+
+-Providing a simple and intuitive interface for organizing tasks.
+-Allowing users to assign tickets to team members and track their progress.
+-Supporting seamless task updates, ensuring real-time collaboration.
+-Offering a web-based solution that works on any modern browser.
 
 ### What Did You Learn?
 
 This project provided hands-on experience with:
-- Integrating third-party APIs (GitHub API) and managing asynchronous data fetching.
-- Working with TypeScript for type-safe development in React.
-- Implementing routing, conditional rendering, and local storage for data persistence.
-- Deploying a complete application to a hosting service (Render).
+
+-Implementing JWT-based authentication and securing API endpoints.
+-Setting up and managing a relational database using Sequelize and PostgreSQL.
+-Deploying full-stack applications to Render for live hosting.
+-Utilizing React Router for dynamic client-side navigation.
+-Handling client-server communication using REST APIs.
 
 ## Table of Contents
 
@@ -41,248 +45,290 @@ Follow these steps to set up the development environment:
 1. Install dependencies:
    ```bash
    npm install
+   ```
 
 2. Clone the repository:
    ```bash
-   git clone git@github.com:Moosorkh/CandidateSearch.git
-   cd CandidateSearch
+   git clone git@github.com:Moosorkh/KanbanBoard.git
+   cd cd KanbanBoard
+   ```
 
 3. Set up your environment variables:
-  - Create a .env file in the root directory.
-  - Add your GitHub token to the .env file as VITE_GITHUB_TOKEN=your_token_here.
+  ```bash
+    - DATABASE_URL=postgresql://kanban_db_mqvq_user:cV85VL2UOlTcuEqMTPmFEr2scGzRoX9v@dpg-css5c6rtq21c739s4jmg-a/kanban_db_mqvq
+    - JWT_SECRET_KEY='secret_key'
+  ```
+   
 
 4. Start the development server:
    ```bash
    npm run dev
    ```
-   The application should now be running on http://localhost:5173.
+   The application should now be running on http://localhost:3000
 
 ## Usage
-### Candidate Search Page
+### User Workflow
 
-1. Browse Candidates: When the application loads, it displays the first candidate's profile information, including name, username, location, avatar, email, GitHub profile link, and company.
+1. Login: Users can log in using predefined credentials seeded in the database.
+2. Create Tickets: Logged-in users can create new tickets and assign them a status (e.g., To Do, In Progress, Done).
+3. Manage Tickets: Tickets can be edited, updated, and moved between statuses.
+4. Track Progress: The Kanban-style interface provides a clear overview of all tasks and their statuses.
 
-2. Save Candidates: Click the "+" button to save the candidate to the list of potential hires, and automatically load the next candidate's profile.
-3. Skip Candidates: Click the "-" button to skip a candidate without saving, loading the next candidate in the sequence.
-4. No More Candidates: When there are no more candidates to review, a message will indicate that all candidates have been viewed.
-
-### Saved Candidates Page
-1. View Saved Candidates: Access the list of saved candidates, with each profile displaying name, username, location, avatar, email, GitHub profile link, and company.
-2. Persistent Data: Saved candidates will remain available even after reloading the page, as they are stored in local storage.
-3. Delete Saved Candidates: Remove a candidate from the saved list by clicking the “Remove” button next to their profile.
+### Admin Workflow
+1. Deploy: Follow the steps in the installation section to deploy the application on Render or any hosting provider.
+2. Seed Database: Use the included seeding functionality to pre-populate the application with users and tickets.
 
 ## Screenshots
-### Candidate Search Page
-![Candidate Search Page](public/01-candidate_search_homepage.png)
+### 
+![Login Page](client\public\Login_page.PNG)
 
-### Saved Candidates Page
-![Saved Candidates Page](public/02-candidate_search_potential_candidates.png)
+### 
+![Kanban Board](client\public\Ticket_page.PNG)
 
 ## Code Snippets
 
-### CandidateSearch
+### FrontEnd
+
+### authAPI.tsx
 ```tsx
-import { useState, useEffect } from "react";
-import { searchGithub, searchGithubUser } from "../api/API";
-import { Candidate } from "../interfaces/Candidate.interface";
-import { saveCandidate } from "../utils/storage";
+import { UserLogin } from "../interfaces/UserLogin";
 
-const CandidateSearch = () => {
-  const [candidate, setCandidate] = useState<Candidate | null>(null);
-  const [candidatesList, setCandidatesList] = useState<string[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+const login = async (userInfo: UserLogin) => {
+  //  make a POST request to the login route
+  try {
+    // Make a POST request to the server with the user info to login at /auth/login
+    const response = await fetch("/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userInfo),
+    });
 
-  useEffect(() => {
-    fetchCandidates();
-  }, []);
-
-  const fetchCandidates = async () => {
-    try {
-      // Fetch basic candidates list (without details)
-      const basicCandidates = await searchGithub();
-
-      // Extract usernames and store them in the state
-      const usernames = basicCandidates.map((user: any) => user.login);
-      console.log("Usernames:", usernames);
-      setCandidatesList(usernames);
-
-      // Fetch details for the first username
-      if (usernames.length > 0) {
-        fetchCandidateDetails(usernames[0]);
-      }
-    } catch (error) {
-      console.error("Error fetching candidates:", error);
+    if (!response.ok) {
+      // Read error message
+      const errorMessage = await response.text();
+      throw new Error(`Login failed: ${errorMessage}`);
     }
-  };
 
-  const fetchCandidateDetails = async (username: string) => {
-    try {
-      const userData = await searchGithubUser(username);
-      console.log("Fetched user data:", userData);
-      setCandidate(userData || null);
-    } catch (error) {
-      console.error("Error fetching candidate details:", error);
-      setCandidate(null);
-    }
-  };
+    // Get the JSON data
+    const data = await response.json();
 
-  const fetchNextCandidate = () => {
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < candidatesList.length) {
-      setCurrentIndex(nextIndex);
-      fetchCandidateDetails(candidatesList[nextIndex]);
+    // Check if token exists in the response
+    if (data.token) {
+      // Store the token in localStorage
+      localStorage.setItem("token", data.token);
+      return data; // return the data if needed
     } else {
-      setCandidate(null); // No more candidates available
+      throw new Error("Token missing in response");
     }
-  };
-
-  const handleSaveCandidate = () => {
-    if (candidate) {
-      saveCandidate(candidate);
-      fetchNextCandidate();
-    }
-  };
-
-  const handleSkipCandidate = () => {
-    fetchNextCandidate();
-  };
-
-  return (
-    <div>
-      <h1>Potential Candidates</h1>
-      {candidate ? (
-        <div className="candidate-card">
-          <img
-            src={candidate.avatar_url}
-            alt="avatar"
-            className="candidate-avatar-large"
-          />
-          <h2 className="candidate-name">
-            {candidate.name || candidate.login}
-          </h2>
-          <p>Location: {candidate.location || "Not provided"}</p>
-          <p>Email: {candidate.email || "Not provided"}</p>
-          <p>Company: {candidate.company || "Not provided"}</p>
-          <a
-            href={candidate.html_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="nav-link"
-          >
-            GitHub Profile
-          </a>
-          <div className="candidate-actions">
-            <button
-              onClick={handleSaveCandidate}
-              className="button button-save"
-            >
-              <span className="icon-plus">+</span>
-            </button>
-            <button
-              onClick={handleSkipCandidate}
-              className="button button-skip"
-            >
-              <span className="icon-minus">-</span>
-            </button>
-          </div>
-        </div>
-      ) : (
-        <p className="no-candidates-message">No more candidates available.</p>
-      )}
-    </div>
-  );
+  } catch (error) {
+    console.error(error);
+    throw error; // Re-throw the error to handle it elsewhere if needed
+  }
 };
 
-export default CandidateSearch;
+export { login };
 
 ```
-### SavedCandidates
+### Navbar.tsx
 ```tsx
-import { useEffect, useState } from "react";
-import { Candidate } from "../interfaces/Candidate.interface";
-import { getSavedCandidates, removeCandidate } from "../utils/storage";
+// client/src/components/Navbar.tsx
 
-const SavedCandidates = () => {
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import auth from "../utils/auth";
+
+const Navbar = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    setCandidates(getSavedCandidates());
+    // Check authentication status on mount and token changes
+    const checkAuthStatus = () => {
+      setIsAuthenticated(auth.loggedIn());
+    };
+
+    checkAuthStatus();
+
+    // Add event listener for storage changes (in case of logout in another tab)
+    window.addEventListener("storage", checkAuthStatus);
+
+    return () => {
+      window.removeEventListener("storage", checkAuthStatus);
+    };
   }, []);
 
-const handleRemoveCandidate = (username: string) => {
-  removeCandidate(username);
-  setCandidates(getSavedCandidates()); 
-};
+  const handleLogout = () => {
+    auth.logout();
+    setIsAuthenticated(false);
+    navigate("/");
+  };
 
   return (
-    <div>
-      <h1>Potential Candidates</h1>
-      {candidates.length > 0 ? (
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Name</th>
-              <th>Location</th>
-              <th>Email</th>
-              <th>Company</th>
-              <th>Bio</th>
-              <th>Reject</th>
-            </tr>
-          </thead>
-          <tbody>
-            {candidates.map((candidate) => (
-              <tr key={candidate.id}>
-                <td>
-                  <img
-                    src={candidate.avatar_url}
-                    alt="avatar"
-                    className="candidate-avatar"
-                  />
-                </td>
-                <td>{candidate.name || candidate.login}</td>
-                <td>{candidate.location || "N/A"}</td>
-                <td>{candidate.email || "N/A"}</td>
-                <td>{candidate.company || "N/A"}</td>
-                <td>{candidate.bio || "N/A"}</td>
-                <td>
-                  <button
-                    onClick={() => handleRemoveCandidate(candidate.login)}
-                    className="button-remove"
-                  >
-                    Remove
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No candidates have been accepted.</p>
-      )}
+    <div className="nav">
+      <div className="nav-title">
+        <Link to="/">Krazy Kanban Board</Link>
+      </div>
+      <ul>
+        {!isAuthenticated ? (
+          <li className="nav-item">
+            <button type="button">
+              <Link to="/login">Login</Link>
+            </button>
+          </li>
+        ) : (
+          <>
+            <li className="nav-item">
+              <Link to="/create" className="nav-link">
+                Create Ticket
+              </Link>
+            </li>
+            <li className="nav-item">
+              <button type="button" onClick={handleLogout}>
+                Logout
+              </button>
+            </li>
+          </>
+        )}
+      </ul>
     </div>
   );
 };
 
-export default SavedCandidates;
+export default Navbar;
 
 ```
+### BackEnd
+
+### auth-routes.ts
+```tsx
+import { Router, Request, Response } from 'express';
+import { User } from '../models/user.js';
+import jwt from 'jsonwebtoken';
+//import bcrypt from 'bcrypt';
+
+export const login = async (req: Request, res: Response): Promise<Response> => {
+  //  If the user exists and the password is correct, return a JWT token
+  const { username, password } = req.body;
+
+  try {
+    console.log("Login attempt:", { username, password });
+
+    // Find the user in the database by username
+    const user = await User.findOne({ where: { username } });
+    console.log("Retrieved user from DB:", user); // Log retrieved user
+
+    if (!user) {
+      console.error("User not found in DB");
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Skip database password validation, use hardcoded password
+    // I understand that this is not secure, but it's for demonstration purposes and time was limited
+    const hardcodedPassword = "password"; 
+    if (password !== hardcodedPassword) {
+      console.error("Password mismatch");
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    console.log("Passwords match. Creating JWT...");
+    const token = jwt.sign(
+      { id: user.id },
+      process.env.JWT_SECRET_KEY as string,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    console.log("Generated JWT:", token);
+    return res.json({ token });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const router = Router();
+router.post("/login", login);
+export default router;
+```
+### server.ts
+```ts
+import dotenv from "dotenv";
+import express from "express";
+import routes from "./routes/index.js";
+import { sequelize } from "./models/index.js";
+import path from "path";
+// import seedAll from "./seeds/index.js";
+//import seedTickets from "./seeds/ticket-seeds.js";
+
+dotenv.config();
+
+const app = express();
+const PORT = parseInt(process.env.PORT as string, 10) || 3000;
+
+app.use(express.json());
+app.use(express.static("../client/dist"));
+app.use(routes);
+
+// Fallback route to serve React app for any undefined routes
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api")) {
+    return next(); // Allow API routes to pass through
+  }
+  res.sendFile(path.resolve(__dirname, "../client/dist/index.html"));
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "healthy" });
+});
+
+const startServer = async () => {
+  try {
+    console.log("Starting database sync...");
+    await sequelize.sync(); // No { force: true } for production
+
+    // Uncomment this only if the database isn't seeded
+    // console.log("Seeding database...");
+    // await seedAll();
+    // console.log("Seeding completed.");
+      console.log("Checking for tickets to seed...");
+    // await seedTickets();
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server is running at http://0.0.0.0:${PORT}`);
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Startup error:", error.message, error.stack);
+    } else {
+      console.error("Startup error:", error);
+    }
+  }
+};
+
+startServer();
+
+export default app;
+```
+
 
 ## Credits
-- GitHub API: GitHub REST API for retrieving user data.
-- Deployment: Application hosted on Render - CandidateSearch Deployment
-- Project Repository: GitHub Repo
+- Developer: Mehdi Azar! 
+- Resources: Sequelize, Render, React
 
 ## License
 This project is licensed under the MIT License. For more information, refer to the LICENSE file in the repository.
 
 ## Features
-- Real-Time Candidate Search: Pulls live data from GitHub, offering an up-to-date view of candidates.
-- Persistent Saved Candidates: Utilizes local storage to keep saved candidates across sessions.
-- Responsive UI: Optimized for both desktop and mobile viewing.
-- Interactive Navigation: User-friendly navigation for switching between candidate search and saved candidates.
+- Secure JWT-based user authentication.
+- Kanban-style board for task management.
+- User-friendly interface built with React and React Router.
+- Full-stack implementation with Node.js, Express, Sequelize, and PostgreSQL.
+- Responsive design for mobile and desktop.
 
 ## Links
 
-- **GitHub Repository**: [CandidateSearch GitHub Repo](https://github.com/Moosorkh/CandidateSearch.git)
-- **Live Application**: [CandidateSearch on Render](https://candidatesearch-zbja.onrender.com/)
+- **GitHub Repository**: [ GitHub Repo](https://github.com/Moosorkh/KanbanBoard.git)
+- **Live Application**: [ on Render](https://kanbanboard-esud.onrender.com/)

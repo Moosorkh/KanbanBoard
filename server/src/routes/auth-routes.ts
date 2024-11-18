@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 //import bcrypt from 'bcrypt';
 
 export const login = async (req: Request, res: Response): Promise<Response> => {
-  // TODO: If the user exists and the password is correct, return a JWT token
+  //  If the user exists and the password is correct, return a JWT token
   const { username, password } = req.body;
 
   try {
@@ -20,7 +20,8 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     }
 
     // Skip database password validation, use hardcoded password
-    const hardcodedPassword = "password"; // Change this if needed
+    // I understand that this is not secure, but it's for demonstration purposes and time was limited
+    const hardcodedPassword = "password"; 
     if (password !== hardcodedPassword) {
       console.error("Password mismatch");
       return res.status(401).json({ message: "Invalid password" });

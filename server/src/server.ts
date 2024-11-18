@@ -37,7 +37,7 @@ const startServer = async () => {
     // await seedAll();
     // console.log("Seeding completed.");
       console.log("Checking for tickets to seed...");
-     // await seedTickets();
+    // await seedTickets();
 
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server is running at http://0.0.0.0:${PORT}`);
